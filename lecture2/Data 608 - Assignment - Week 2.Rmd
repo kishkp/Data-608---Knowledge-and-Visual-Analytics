@@ -1,0 +1,165 @@
+---
+title: "Data 608 - Homework 2"
+author: "Kishore Prasad"
+date: "February 15, 2017"
+output: html_document
+---
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+
+library(bigvis)
+library(ggplot2)
+library(dplyr)
+library(ggthemes)
+
+data_all <- read.csv("D:/CUNY/Courses/Data 608 - Knowledge and Visual Analytics/Data-608---Knowledge-and-Visual-Analytics/lecture2/data/BK.csv")
+
+data_all <- rbind.data.frame(data_all, read.csv("D:/CUNY/Courses/Data 608 - Knowledge and Visual Analytics/Data-608---Knowledge-and-Visual-Analytics/lecture2/data/BX.csv"))
+
+data_all <- rbind.data.frame(data_all, read.csv("D:/CUNY/Courses/Data 608 - Knowledge and Visual Analytics/Data-608---Knowledge-and-Visual-Analytics/lecture2/data/MN.csv"))
+
+data_all <- rbind.data.frame(data_all, read.csv("D:/CUNY/Courses/Data 608 - Knowledge and Visual Analytics/Data-608---Knowledge-and-Visual-Analytics/lecture2/data/QN.csv"))
+
+data_all <- rbind.data.frame(data_all, read.csv("D:/CUNY/Courses/Data 608 - Knowledge and Visual Analytics/Data-608---Knowledge-and-Visual-Analytics/lecture2/data/SI.csv"))
+
+#data_all <- dplyr::select(data_all, Borough, LotArea, BldgArea, NumBldgs, NumFloors, AssessTot, ExemptLand, ExemptTot, YearBuilt))
+
+```
+
+1. After a few building collapses, the City of New York is going to begin investigating older buildings for safety. However, the city has a limited number of inspectors, and wants to find a 'cut-off' date before most city buildings were constructed. Build a graph to help the city determine when most buildings were constructed. Is there anything in the results that causes you to question the accuracy of the data? (note: only look at buildings built since 1850)
+
+\newline
+\newline
+
+
+Analysis: Below are the graphs that show the number of buildings by year. 
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+
+data_Q1 <- data_all %>%
+  filter(YearBuilt > 1850, YearBuilt < 2017, NumFloors != 0 ) %>%
+  select(YearBuilt, NumFloors)
+
+ds <- with(data_Q1, condense(bin(YearBuilt, 1)))
+
+ds <-ds %>%  mutate(cumsum = cumsum(.count)) %>%  mutate(totPert = cumsum / sum(.count) * 100) 
+
+par(mfrow=c(1,2))
+
+ggplot(ds) + geom_point(aes(x=YearBuilt, y=.count)) + 
+  scale_x_continuous(breaks = seq(1850, 2020, by=10))
+
+ggplot(ds) + geom_line(aes(x=YearBuilt, y=.count)) + 
+  scale_x_continuous(breaks = seq(1850, 2020, by=10))
+
+```
+
+Data accuracy: From the above charts we can see that there are a number of spikes in the data. These spikes are especially for only one year in between and the adjacent years seem to have near normal values. For example, year 1920 has about 90K buildings built. However, the years 1919 and 1921 have less than 1K buildings respectively. This is highly improbable since the real estate cycle does not spike in 1 year and fall the next year drastically. Also, this seems to happen throughout the data.  This would suggest that the method of entering the data (or recording the year built for a building) is flawed. 
+
+Below is a cumulative chart for the buildings built in the respective years. The Y-axis represents the percent of buildings built on or before the particular year. 
+
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+
+
+ggplot(ds) + geom_line(aes(x=YearBuilt, y=totPert)) + 
+  scale_x_continuous(breaks = seq(1850, 2020, by=10)) + 
+  scale_y_continuous(breaks = seq(0, 100, by=5)) + 
+  geom_hline(yintercept =85,color="Red") + 
+  geom_vline(xintercept =1974,color="red") 
+  
+```
+
+
+Assuming that we want to cover 85% of the buildings for inspection, we can see that we have to inspect all buildings on or before 1974. In a similar way, we can use this chart to determine a "cut-off" for the building inspections.
+
+
+
+\newline
+\newline
+
+
+
+2. The city is particularly worried about buildings that were unusually tall when they were built, since best-practices for safety hadn't yet been determined. Create a graph that shows how many buildings of a certain number of floors were built in each year (note: you may want to use a log scale for the number of buildings). It should be clear when 20-story buildings, 30-story buildings, and 40-story buildings were first built in large numbers.
+
+\newline
+\newline
+
+Analysis: We extract only those building records where the NumFloors are between 20 and 50 This will enable us focus on the analysis as requested in the question. From the below chart we can see how the number of stories have increased over the years. 20 story buildings have been around since about 1897. 
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+
+data_Q2 <- data_Q1 %>%  filter(NumFloors >= 20, NumFloors <= 50)
+ds <- with(data_Q2, condense(bin(YearBuilt, 1), bin(x = NumFloors, width = 5, origin = 17.5)))
+
+ggplot(data=ds, aes(ds$YearBuilt)) + 
+  geom_histogram() + 
+  facet_wrap(~ ds$NumFloors, ncol = 1) +
+  scale_x_continuous(breaks = seq(1850, 2020, by=5))+
+  scale_y_log10() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust=1))+
+  labs(x = "Years", y = "Number of Buildings")
+
+```
+
+Now lets zoom in on only 20, 30 and 40 stories instead of the above. Here is a chart that looks that this interval:
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+
+data_Q2 <- data_Q1 %>%  filter(NumFloors >= 20, NumFloors <= 40)
+ds <- with(data_Q2, condense(bin(YearBuilt, 1), bin(x = NumFloors, width = 10, origin = 15)))
+
+ggplot(data=ds, aes(ds$YearBuilt)) + 
+  geom_histogram() + 
+  facet_wrap(~ ds$NumFloors, ncol = 1) +
+  scale_x_continuous(breaks = seq(1850, 2020, by=5))+
+#  scale_y_log10() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust=1))+
+  labs(x = "Years", y = "Number of Buildings")
+
+```
+
+We can see that though 20 stories were started around 1890's, the most number were built between 1925 to 1930. Similarly, 30 stories were more popular between 1960 to 1990. The 40 stories have been popular since 1990's but the most were built around 2008 - 2013.
+
+
+
+\newline
+\newline
+
+
+
+3. Your boss suspects that buildings constructed during the US's involvement in World War II (1941-1945) are more poorly constructed than those before and after the war due to the high cost of materials during those years. She thinks that, if you calculate assessed value per floor, you will see lower values for buildings at that time vs before or after. Construct a chart/graph to see if she's right.
+
+Analysis: To answer this question, we will take the "AssessTot" column and divide it by the "NumFloors" to get the assessed value per floor. Then we chart both the AssessTot and the Assessed value per floor for the years from 1920 to 1960. This will let us compare the years in question (1941 - 1945) with the adjacent years. Hopefully this will clarify the above thought process.
+
+
+```{r, echo = TRUE, warning=FALSE, message=FALSE}
+
+# http://stackoverflow.com/questions/10349206/add-legend-to-ggplot2-line-plot
+# http://www.cookbook-r.com/Graphs/Legends_(ggplot2)/
+
+data_Q3 <- data_all %>%
+  filter(YearBuilt > 1920, YearBuilt < 1960, NumFloors != 0 ) %>% 
+  mutate(AssValPerFloor = AssessTot / NumFloors) %>%   
+  select(YearBuilt, AssValPerFloor, AssessTot)
+
+ds <- with(data_Q3, condense(bin(YearBuilt, 1), z=AssValPerFloor))
+ds1 <- with(data_Q3, condense(bin(YearBuilt, 1), z=AssessTot))
+
+ds_combined <- cbind.data.frame(YearBuilt = ds$YearBuilt, MeanAssValPerFloor = ds$.mean, MeanAssessTot = ds1$.mean)
+
+ggplot(ds_combined, aes(x=YearBuilt)) + 
+  geom_line(aes(y=MeanAssValPerFloor, color = "Assessed Value Per Floor")) +
+  geom_line(aes(y=MeanAssessTot, color="Assessed Total")) +
+  scale_x_continuous(breaks = seq(1850, 2020, by=1)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust=1))+
+  annotate("rect", xmin = 1941, xmax = 1945, ymin = 0, ymax = Inf, alpha = .2) +
+  scale_colour_manual("", breaks = c("Assessed Value Per Floor", "Assessed Total"),
+                      values = c("red", "blue")) +
+  theme(legend.position="bottom")
+
+```
+
+From the chart above, we can see that neither the Assessed Total nor the Assessed Value per floor seem to be different from the adjacent years. The value seems to be moving in a cycle every few years. On the contrary, during the years in question, the values seem to be higher for most of the duration.
+
+
