@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 fluidPage(
   headerPanel('Mortality Rate'),
   # sidebarPanel(
@@ -72,4 +71,3 @@ fluidPage(
 #                 )
 #     )
 # )
->>>>>>> 0ed2cfae5097ef811c1c384edf39a9fede104d19
