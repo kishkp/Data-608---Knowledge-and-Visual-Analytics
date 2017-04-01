@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 library(ggplot2)
 library(dplyr)
 library(googleVis)
@@ -185,5 +184,3 @@ function(input, output, session) {
       mark_bar()    
     
   })
->>>>>>> 0ed2cfae5097ef811c1c384edf39a9fede104d19
-}
