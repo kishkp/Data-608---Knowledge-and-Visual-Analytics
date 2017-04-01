@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 library(ggplot2)
 library(dplyr)
 library(googleVis)
@@ -142,5 +141,3 @@ function(input, output, session) {
       encode_color(field = 'State', type='nominal') %>%
       mark_line()    
   })
->>>>>>> 0ed2cfae5097ef811c1c384edf39a9fede104d19
-}
