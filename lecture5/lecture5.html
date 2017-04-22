@@ -1,0 +1,146 @@
+<html>
+<head><title>Lecture 5</title></head>
+
+<body>
+
+<h1>Lecture 5 - Homework / Assignment</h1>
+
+<h2>Reverse a word </h2>
+
+<script type="text/javascript">
+// Reverse a word
+document.write('<p>In this function, we will reverse any word that the user has typed in. </p><br>');
+document.write('Please type in a word below <br>');
+
+function reverse(){
+    var t = document.getElementById('reverseword');
+	var origword = document.getElementById('word').value ; 
+	var rev = '';
+	
+	for (i = origword.length -1 ; i >=0; i--) { 
+		rev = rev.concat(origword.charAt(i))
+}
+	console.log(rev)
+	
+    t.innerHTML = 'The reverse of ' + origword + ' is : ' + rev ;
+    return;
+};
+
+
+</script>
+
+<p>
+<form>
+    <input id="word" type="string" size="20">
+    <input type="button" value="check" onClick="reverse();">
+</form>
+</p>
+
+<div id="reverseword"></div>
+
+<h2>Number Tables </h2>
+
+<script type="text/javascript">
+document.write('<p>In this function, we will generate the 20 multiples of any given number. </p><br>');
+document.write('Please enter a number below <br>');
+
+function twentytables(){
+    var t = document.getElementById('tables20');
+	var tablesnum = document.getElementById('num').value ; 
+	var multi = 1;
+	output = '<table>' ;
+	
+	for (i = 1 ; i <=5; i++) {
+		output = output.concat('<tr>');
+		for (j = 1 ; j <=4; j++) {
+			output = output.concat('<td>') ;
+			output = output.concat(  multi * tablesnum);
+			multi+=1;
+			output = output.concat('</td>');
+		}
+		output = output.concat('</tr>');
+	}
+
+    t.innerHTML = 'The 20 tables for '  + tablesnum + ' is : <br>' + output;
+	return;
+};
+</script>
+
+<p>
+<form>
+    <input id="num" type="number" size="10">
+    <input type="button" value="check" onClick="twentytables();">
+</form>
+</p>
+
+<div id="tables20"></div>
+
+
+<h2>President's Height and Weight</h2>
+
+<h4>Table of President's Height and Weight</h4>
+
+<div id="presheight"></div>
+
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<script type="text/javascript">
+d3.text("presidents.csv", function(data) {
+	var parsedCSV = d3.csvParseRows(data);
+	var container = d3.select("#presheight")
+		.append("table")
+		.selectAll("tr")
+			.data(parsedCSV).enter()
+			.append("tr")
+		.selectAll("td")
+			.data(function(d) { return d; }).enter()
+			.append("td")
+			.text(function(d) { return d; });
+});
+</script>
+
+<h4> Get President's Height and Weight</h4>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<script type="text/javascript">
+document.write('<p>In this function, we will read from a local csv file and extract the height and weight of a president given the name. </p><br>');
+document.write('Please type in the president\'s name below <br>');
+
+var Names=[];
+var Heights=[];
+var Weights=[];
+
+d3.csv("presidents.csv",function(csv){
+            csv.map(function(d){
+                Names.push(d.Name);
+                Heights.push(+d.Height);
+                Weights.push(+d.Weight);
+            })
+        });
+
+console.log("Name",Names);
+console.log("Height",Heights);
+
+function getHeight(){
+var t = document.getElementById('PresidentsHeight');
+var presname = document.getElementById('president').value ; 
+t.innerHTML = 'The Height and Weight of : ' + presname + ' is : ' + Heights[Names.indexOf(presname)] + ' and  ' + Weights[Names.indexOf(presname)] ;
+return;
+};
+</script>
+
+<p>
+<form>
+    <input id="president" type="string" size="20">
+    <input type="button" value="check" onClick="getHeight();">
+</form>
+</p>
+
+<div id="PresidentsHeight"></div>
+
+<h4> End of Assignment </h4>
+
+</body>
+</html>
