@@ -1,0 +1,89 @@
+<html>
+	<head>
+	</head>
+
+	<body>
+		<div>
+			<p align=center style='text-align:center'><b>Data 608 - Knowledge and Visual Analytics</b></p>
+
+<p align=center style='text-align:center'><b>Final Project Proposal</b></p>
+
+
+<p><b>Dataset:</b> Consumer complaint database.</p>
+
+<p><b>Brief explanation of the dataset:</b> This is a database of consumer complaints across financial products and services. The publisher of this data is Consumer Financial Protection Bureau. The variables available in the data are as follows:</p>
+
+<p> <ul> 
+	<li> Date received: The date the complaint was received </li>
+	<li> Product: The product type against which the complaint was raised </li>
+	<li> Sub-product: The sub-product against which the complaint was raised </li>
+	<li> Issue: What the complaint (Issue) was about </li>
+	<li> Sub-issue: Further drill down on the complaint </li>
+	<li> Consumer complaint narrative: Description of the complaint </li>
+	<li> Company public response: What was the response from the company </li>
+	<li> Company: The financial institution </li>
+	<li> State: Which state the complaint was raised </li>
+	<li> ZIP code </li>
+	<li> Tags: Tags used to classify the complaint </li>
+	<li> Consumer consent provided? </li>
+	<li> Submitted via: What was the channel used to raise the complaint </li>
+	<li> Date sent to company: The date when the complaint was sent to the company by CFPB </li>
+	<li> Company response to consumer: Action taken by the financial company </li>
+	<li> Timely response?: Was the response in a timely manner </li>
+	<li> Consumer disputed?: Did the consumer dispute the response? </li>
+	<li> Complaint ID: The complaint ID. </li>
+</ul></p>
+
+
+<p><b>Dataset characteristics:</b> This is a csv data that is downloaded from the below given URL. The dataset contains 742,451 records and the size of the dataset is close
+to 200 MB.</p>
+
+<p><b>Dataset URL:</b> <a href="https://catalog.data.gov/dataset/consumer-complaint-database">https://catalog.data.gov/dataset/consumer-complaint-database</a></p>
+
+<p><b>Dataset processing:</b> A major challenge with the data is the huge size. Given that this data needs to be rendered on the web (A shiny App) and that the data would most probably reside in my github account, the challenge would be to resolve the graphics in a timely manner. </p>
+
+<p> To limit the size of the data, I have decided to preprocess this dataset and consider only the following variables for the final analysis and condense the dataset based on the count of records for the below variable combinations:</p>
+
+<p> <ul> 
+	<li> Date received: The date the complaint was received </li>
+	<li> Product: The product type against which the complaint was raised </li>
+	<li> Issue: What the complaint (Issue) was about </li>
+	<li> Company public response: What was the response from the company </li>
+	<li> Company: The financial institution </li>
+	<li> State: Which state the complaint was raised </li>
+	<li> Submitted via: What was the channel used to raise the complaint </li>
+	<li> Company response to consumer: Action taken by the financial company </li>
+	<li> Timely response?: Was the response in a timely manner </li>
+	<li> Consumer disputed?: Did the consumer dispute the response? </li>
+</ul></p>
+
+<p> Some of the preprocessing would involve the following:</p>
+
+
+<p> <ul> 
+	<li> Bin the data into years and months and taking counts (further reducing the data size)</li>
+	<li> Keep only relevant products and company information and the counts there of (any product or company with less numbers would be classified into 'others') </li>
+</ul></p>
+
+
+<p> In addition for each analysis, I would like to create a separate condensed dataset catering only to that analysis.</p>
+
+<p><b> Few analyses I have in mind:</b> The following are a few analysis / charts I have in mind as of now:</p>
+
+<p> <ul>
+	<li> Trend of complaints across years by state, product, etc.: Here, I would like to show a time-lapse chart comparing either the states or products or submission channels</li>
+	<li> Which states have the most complaints filtered by product, company and year?</li>
+	<li> Has the company improved over the years? </li>
+	<li> What channels are used to complain across products, company or in a state?</li>
+	<li> How timely is the company response to complaints?</li>
+	<li> Which companies did not resolve the issue satisfactorily (based on the consumer disputing the solution)</li>
+</ul> </p>
+
+<p>
+<b> Relevance of the Analysis:</b> 
+This project is about data exploration and to find trends and patterns in the data that is available to us. Though the analysis will be at a high level, it will enable the companies to identify areas of focus and improvement in their customer service and conflict resolution. This will lead to a more satisfied customer.
+</p>
+
+</div>
+</body>
+</html>
