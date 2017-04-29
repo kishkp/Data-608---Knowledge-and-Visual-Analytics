@@ -1,4 +1,14 @@
+library(shiny)
 library(shinythemes)
+library(ggplot2)
+library(dplyr)
+library(googleVis)
+library(plotly)
+library(jsonlite)
+library(vegalite)
+library(reshape2)
+library(data.table)
+
 
 fluidPage(theme = shinytheme("cerulean"),
   #shinythemes::themeSelector('cerulean'), 
@@ -6,30 +16,36 @@ fluidPage(theme = shinytheme("cerulean"),
     tabPanel("Project Summary", 
       fluidPage(
         mainPanel(
-          ncludeHTML("index.html")
+          includeHTML("ProjectBrief.html")
         )
       )
     ),
     
     tabPanel("Complaints Trend",
       fluidPage(
-        headerPanel('Mortality Rate'),
           mainPanel(
             fluidRow(
-              column(3, selectInput('year', 'Year', unique(df$Year), selected='2010')),
-              column(9, selectInput('disease', 'Disease', unique(df$ICD.Chapter), selected='Neoplasms'))
+              radioButtons("dim", "Dimension:",
+                           c("State" = "State",
+                             "Product" = "Product",
+                             "Company Public response" = "CompPubResp",
+                             "Company" = "Company",
+                             "Channel" = "Channel",
+                             "Status" = "Status"
+                             ), selected = "Product"
+                           )
             ),
-            tabsetPanel(
-              tabPanel("GGPlot", plotOutput('plot1')),
-              tabPanel("GoogleVis", htmlOutput('plot2')),
-              tabPanel("Plotly", plotlyOutput('plot3')),
-              tabPanel("Vegalite", vegaliteOutput('plot4')
-            )
+            htmlOutput('plot1')
           )
+      )
+    ),
+    tabPanel("Analysis by State",
+      fluidPage(
+        mainPanel(
+          includeHTML("AnalysisByState.html")
         )
       )
     ),
-    tabPanel("Analysis by State"),
     tabPanel("Company Performance"),
     tabPanel("Channel Analysis"),
     tabPanel("Response Time Analysis"),
