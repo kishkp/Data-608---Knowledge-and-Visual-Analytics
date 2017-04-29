@@ -16,7 +16,7 @@ fluidPage(theme = shinytheme("cerulean"),
     tabPanel("Project Summary", 
       fluidPage(
         mainPanel(
-          includeHTML("ProjectBrief.html")
+          includeHTML("./ProjectBrief/ProjectBrief.html")
         )
       )
     ),
@@ -42,11 +42,17 @@ fluidPage(theme = shinytheme("cerulean"),
     tabPanel("Analysis by State",
       fluidPage(
         mainPanel(
-          includeHTML("AnalysisByState.html")
+          includeHTML("./AnalysisByState/AnalysisByState.html")
         )
       )
     ),
-    tabPanel("Company Performance"),
+    tabPanel("Company Performance",
+      fluidPage(
+        mainPanel(
+          includeHTML("companyperformance.html")
+        )
+      )
+    ),
     tabPanel("Channel Analysis"),
     tabPanel("Response Time Analysis"),
     tabPanel("Consumer Disputes")

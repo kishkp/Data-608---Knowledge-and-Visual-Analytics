@@ -9,7 +9,7 @@ library(vegalite)
 library(reshape2)
 library(data.table)
 
-df <- read.csv('https://raw.githubusercontent.com/kishkp/Data-608---Knowledge-and-Visual-Analytics/master/finalproject/Consumer_Complaints_condensed.csv', stringsAsFactors = FALSE)
+df <- read.csv('https://raw.githubusercontent.com/kishkp/Data-608---Knowledge-and-Visual-Analytics/master/finalproject/Data/Consumer_Complaints_condensed.csv', stringsAsFactors = FALSE)
 
 all_states <- unique(df$State)
 all_products <- c('Bank account or service', 'Credit card', 'Credit reporting', 'Debt collection', 'Mortgage', 'Others')
