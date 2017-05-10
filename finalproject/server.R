@@ -11,7 +11,7 @@ library(data.table)
 
 
 
-df <- read.csv('https://raw.githubusercontent.com/kishkp/Data-608---Knowledge-and-Visual-Analytics/master/finalproject/Data/Consumer_Complaints_coded.csv', stringsAsFactors = FALSE)
+df <- read.csv('https://raw.githubusercontent.com/kishkp/Data-608---Knowledge-and-Visual-Analytics/master/finalproject/data/Consumer_Complaints_coded.csv', stringsAsFactors = FALSE)
 
 # "Uncode"  the columns of the condensed dataset
 products <- c('Bank account or service', 'Consumer Loan', 'Credit card', 'Credit reporting', 'Debt collection', 'Mortgage', 'Others', 'Student Loan')

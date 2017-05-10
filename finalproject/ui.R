@@ -49,7 +49,7 @@ fluidPage(theme = shinytheme("cerulean"),
     tabPanel("Company Performance",
       fluidPage(
         mainPanel(
-          includeHTML("./companyperformance/companyperformance.html")
+#          includeHTML("./companyperformance/companyperformance.html")
         )
       )
     ),

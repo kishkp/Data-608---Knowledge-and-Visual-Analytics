@@ -70,12 +70,12 @@ df_new$Disputed_codes <- as.numeric(factor(df_new$Disputed))
 ######### Generate the coded dataset
 
 reqCols <- c("Month", "Year", "Product_codes", "CompPubResp_codes", "Company_codes", 
-             "State_codes", "Channel_codes", "Status_codes", "Timely_codes", "Disputed_codes")
+             "State_codes", "Channel_codes", "Status_codes", "Timely_codes", "Disputed_codes", "Complaints")
 
 df_coded <- df_new[,reqCols]
 
 # Reset names of column
-colnames(df) <- c("Month", "Year", "Product", "CompPubResp","Company","State","Channel","Status",	"Timely", "Disputed")
+colnames(df_coded) <- c("Month", "Year", "Product", "CompPubResp","Company","State","Channel","Status",	"Timely", "Disputed", "Complaints")
 
 # Write the condensed csv back to the disk
 # This file has been uploaded to github to be used for rest of the analysis.
