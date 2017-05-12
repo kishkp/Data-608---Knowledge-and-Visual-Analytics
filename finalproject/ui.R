@@ -25,8 +25,8 @@ fluidPage(theme = shinytheme("cerulean"),
       fluidPage(
         sidebarLayout(
           sidebarPanel(
-            includeHTML("ComplaintsTrend.html"),
-            radioButtons("dim", "Dimension:",
+            includeHTML("ComplaintsTrend_Brief.html"),
+            radioButtons("CT_dim", "Dimension:",
                          c("State" = "State", "Product" = "Product", "Company Response" = "CompPubResp",
                            "Company" = "Company", "Channel" = "Channel", "Status" = "Status"), selected = "Product"),
             width=4),
@@ -40,13 +40,13 @@ fluidPage(theme = shinytheme("cerulean"),
       fluidPage(
         sidebarLayout(
           sidebarPanel(
-            includeHTML("ComplaintsTrend.html"),
-            selectInput(inputID = "ASComp", label = "Company :", choices = c('Amex', 'Bank of America', 'Capital One', 'Citibank', 
+            includeHTML("AnalysisByState_Brief.html"),
+            selectInput("AS_Comp", "Company :", c('Amex', 'Bank of America', 'Capital One', 'Citibank', 
                           'Ditech Financial LLC', 'Encore Capital Group', 'Equifax', 'Experian', 'JPMorgan Chase & Co.', 'Nationstar Mortgage', 
                           'Navient Solutions, LLC.', 'Ocwen', 'Others', 'PNC Bank N.A.', 'Synchrony Financial', 
-                          'TransUnion Intermediate Holdings, Inc.', 'U.S. Bancorp', 'Wells Fargo & Company'), multiple = TRUE),
-            selectInput(inputID = "ASProd", label = "product :", choices = c('Bank account or service', 'Consumer Loan', 'Credit card', 
-                          'Credit reporting', 'Debt collection', 'Mortgage', 'Others', 'Student Loan'), multiple = TRUE),
+                          'TransUnion Intermediate Holdings, Inc.', 'U.S. Bancorp', 'Wells Fargo & Company'), TRUE),
+            selectInput("AS_Prod", "product :",  c('Bank account or service', 'Consumer Loan', 'Credit card', 
+                          'Credit reporting', 'Debt collection', 'Mortgage', 'Others', 'Student Loan'), TRUE),
             width=3),
           mainPanel(
             includeHTML("AnalysisByState.html")

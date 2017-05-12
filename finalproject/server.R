@@ -20,8 +20,8 @@ companies <- c('Amex', 'Bank of America', 'Capital One', 'Citibank', 'Ditech Fin
 states <- c("", "AA", "AE", "AK", "AL", "AP", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "FM", "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MH", "MI", "MN", "MO", "MP", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR", "PW", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY")
 channels <-  c('Email', 'Fax', 'Phone', 'Postal mail', 'Referral', 'Web')
 status <- c('Closed', 'Closed with explanation', 'Closed with monetary relief', 'Closed with non-monetary relief', 'Closed with relief', 'Closed without relief', 'In progress', 'Untimely response')
-timely <- c("No", "Yes")
-disputed <- c( "", "No", "Yes")
+# timely <- c("No", "Yes")
+# disputed <- c( "", "No", "Yes")
 
 years <- unique(df$Year)
 
@@ -31,24 +31,43 @@ comp.fact <- factor(df$Company, labels = companies)
 states.fact <- factor(df$State, labels = states)
 channel.fact <- factor(df$Channel, labels = channels)
 status.fact <- factor(df$Status, labels = status)
-timely.fact <- factor(df$Timely, labels = timely)
-disputed.fact <- factor(df$Disputed, labels = disputed)
+# timely.fact <- factor(df$Timely, labels = timely)
+# disputed.fact <- factor(df$Disputed, labels = disputed)
 
-df <- cbind.data.frame(select(df, Month, Year, Complaints), Product = prod.fact, 
+# df$Timely_Count <- if_else(df$Timely=='Yes', 1, 0, missing=0)
+# df$Dispute_Count <- if_else(df$Disputed=='Yes', 1, 0, missing=0)
+  
+  
+df <- cbind.data.frame(select(df, Month, Year, Complaints, Timely_Count, Disputed_Count), Product = prod.fact, 
                        CompPubResp = compresp.fact, Company = comp.fact, State = states.fact, 
-                       Channel = channel.fact, Status = status.fact, Timely = timely.fact, Disputed = disputed.fact)
+                       Channel = channel.fact, Status = status.fact)
 
 function(input, output, session) {
-  selectedData <- reactive({
-    select_cols <- c(input$dim, "Year", "Complaints", "Timely_Count", "Dispute_Count")
-    group_cols <- c(input$dim, "Year")
-    CJ_cols <- switch(input$dim, State = states, Product = products, CompPubResp = compresp, 
+  CompaniesTrendData <- reactive({
+    select_cols <- c(input$CT_dim, "Year", "Complaints", "Timely_Count", "Disputed_Count")
+    group_cols <- c(input$CT_dim, "Year")
+    CJ_cols <- switch(input$CT_dim, State = states, Product = products, CompPubResp = compresp, 
                       Company = companies, Channel = channels, Status=status)
     
     
     dfSlice <- df %>%
-      mutate(Timely_Count = if_else(Timely=='Yes', 1, 0, missing=0)) %>%
-      mutate(Dispute_Count = if_else(Disputed=='Yes', 1, 0, missing=0)) %>%
+      select_(.dots = select_cols) %>%
+      group_by_(.dots = group_cols) %>% 
+      summarise(Complaints = sum(Complaints), Timely_Count=sum(Timely_Count), Dispute_Count=sum(Disputed_Count)) %>%
+      data.table() %>%
+      setkeyv(group_cols)
+    
+    dfs <- data.frame(dfSlice[CJ(CJ_cols,years), roll=TRUE])
+    # dfs[is.na(dfs$Complaints), ]$Complaints <- 0
+    # dfs[is.na(dfs$Timely_Count), ]$Timely_Count <- 0
+    # dfs[is.na(dfs$Dispute_Count), ]$Dispute_Count <- 0
+  })
+
+  StateAnalysisData <- reactive({
+    select_prod <- input$AS_Comp
+    select_comp <- input$AS_Prod
+    
+    dfSlice <- df %>%
       select_(.dots = select_cols) %>%
       group_by_(.dots = group_cols) %>% 
       summarise(Complaints = sum(Complaints), Timely_Count=sum(Timely_Count), Dispute_Count=sum(Dispute_Count)) %>%
@@ -60,9 +79,11 @@ function(input, output, session) {
     # dfs[is.na(dfs$Timely_Count), ]$Timely_Count <- 0
     # dfs[is.na(dfs$Dispute_Count), ]$Dispute_Count <- 0
   })
-
+  
+  
+  
   output$plot1 <- renderGvis({
-    gvisMotionChart(selectedData(), 
+    gvisMotionChart(CompaniesTrendData(), 
                     idvar=paste0("", input$dim, ""), 
 #                    idvar=paste0("", input$dim, ""), 
                     timevar="Year",
