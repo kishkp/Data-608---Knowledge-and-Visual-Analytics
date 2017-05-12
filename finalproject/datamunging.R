@@ -27,10 +27,13 @@ company_arr <- df %>% group_by(Company) %>% count() %>% mutate(pert = n/sum(n)*1
 others <- as.character(unlist(company_arr[company_arr$pert < 1,1]))
 df[df$Company %in% others, c("Company")] <- "Others"
 
+
 # Collapse rows and get counts 
 df_new <- df %>% 
-          group_by(Month, Year, Product, CompPubResp, Company, State, Channel, Status, Timely, Disputed) %>% 
-          summarise("Complaints"=n())
+          mutate(Timely_Count = if_else(Timely=='Yes', 1, 0, missing=0)) %>%
+          mutate(Dispute_Count = if_else(Disputed=='Yes', 1, 0, missing=0)) %>%
+          group_by(Month, Year, Product, CompPubResp, Company, State, Channel, Status) %>% 
+          summarise("Complaints"=n(), "Timely_Count" = sum(Timely_Count), "Disputed_Count" = sum(Dispute_Count))
 
 
 ##### Condense the huge dataset by converting all character variables to 'numeric codes'.
@@ -59,23 +62,23 @@ df_new$Channel_codes <- as.numeric(factor(df_new$Channel))
 Status_names <- as.character(levels(factor(df_new$Status)))
 df_new$Status_codes <- as.numeric(factor(df_new$Status))
 
-# Timely
-Timely_names <- as.character(levels(factor(df_new$Timely)))
-df_new$Timely_codes <- as.numeric(factor(df_new$Timely))
-
-# Disputed
-Disputed_names <- as.character(levels(factor(df_new$Disputed)))
-df_new$Disputed_codes <- as.numeric(factor(df_new$Disputed))
+# # Timely
+# Timely_names <- as.character(levels(factor(df_new$Timely)))
+# df_new$Timely_codes <- as.numeric(factor(df_new$Timely))
+# 
+# # Disputed
+# Disputed_names <- as.character(levels(factor(df_new$Disputed)))
+# df_new$Disputed_codes <- as.numeric(factor(df_new$Disputed))
 
 ######### Generate the coded dataset
 
 reqCols <- c("Month", "Year", "Product_codes", "CompPubResp_codes", "Company_codes", 
-             "State_codes", "Channel_codes", "Status_codes", "Timely_codes", "Disputed_codes", "Complaints")
+             "State_codes", "Channel_codes", "Status_codes", "Timely_Count", "Disputed_Count", "Complaints")
 
 df_coded <- df_new[,reqCols]
 
 # Reset names of column
-colnames(df_coded) <- c("Month", "Year", "Product", "CompPubResp","Company","State","Channel","Status",	"Timely", "Disputed", "Complaints")
+colnames(df_coded) <- c("Month", "Year", "Product", "CompPubResp","Company","State","Channel","Status",	"Timely_Count", "Disputed_Count", "Complaints")
 
 # Write the condensed csv back to the disk
 # This file has been uploaded to github to be used for rest of the analysis.

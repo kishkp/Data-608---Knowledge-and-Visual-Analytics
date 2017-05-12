@@ -25,15 +25,14 @@ disputed <- c( "", "No", "Yes")
 
 years <- unique(df$Year)
 
-
 prod.fact <- factor(df$Product, labels = products)
 compresp.fact <- factor(df$CompPubResp, labels = compresp)
 comp.fact <- factor(df$Company, labels = companies)
 states.fact <- factor(df$State, labels = states)
 channel.fact <- factor(df$Channel, labels = channels)
 status.fact <- factor(df$Status, labels = status)
-timely.fact <- factor(df$timely, labels = timely)
-disputed.fact <- factor(df$disputed, labels = disputed)
+timely.fact <- factor(df$Timely, labels = timely)
+disputed.fact <- factor(df$Disputed, labels = disputed)
 
 df <- cbind.data.frame(select(df, Month, Year, Complaints), Product = prod.fact, 
                        CompPubResp = compresp.fact, Company = comp.fact, State = states.fact, 
@@ -43,12 +42,13 @@ function(input, output, session) {
   selectedData <- reactive({
     select_cols <- c(input$dim, "Year", "Complaints", "Timely_Count", "Dispute_Count")
     group_cols <- c(input$dim, "Year")
-    CJ_cols <- switch(input$dim, State = states, Product = products, CompPubResp = compresp, Company = companies,                   Channel = channels, Status=status)
+    CJ_cols <- switch(input$dim, State = states, Product = products, CompPubResp = compresp, 
+                      Company = companies, Channel = channels, Status=status)
     
     
     dfSlice <- df %>%
-      mutate(Timely_Count = if_else(Timely=='Y', 1, 0, missing=0)) %>%
-      mutate(Dispute_Count = if_else(Disputed=='Y', 1, 0, missing=0)) %>%
+      mutate(Timely_Count = if_else(Timely=='Yes', 1, 0, missing=0)) %>%
+      mutate(Dispute_Count = if_else(Disputed=='Yes', 1, 0, missing=0)) %>%
       select_(.dots = select_cols) %>%
       group_by_(.dots = group_cols) %>% 
       summarise(Complaints = sum(Complaints), Timely_Count=sum(Timely_Count), Dispute_Count=sum(Dispute_Count)) %>%
