@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+	.state{
+		fill: none;
+		stroke: #a9a9a9;
+		stroke-width: 1;
+	}
+	.state:hover{
+		fill-opacity:0.5;
+	}
+	#tooltipstate {   
+		position: absolute;           
+		text-align: center;
+		padding: 20px;             
+		margin: 10px;
+		font: 12px sans-serif;        
+		background: lightsteelblue;   
+		border: 1px;      
+		border-radius: 2px;           
+		pointer-events: none;         
+	}
+	#tooltipstate h4{
+		margin:0;
+		font-size:14px;
+	}
+	#tooltipstate{
+		background:rgba(0,0,0,0.9);
+		border:1px solid grey;
+		border-radius:5px;
+		font-size:12px;
+		width:auto;
+		padding:4px;
+		color:white;
+		opacity:0;
+	}
+	#tooltipstate table{
+		table-layout:auto;
+	}
+	#tooltipstate tr td{
+		padding:0;
+		margin:0;
+	}
+	#tooltipstate tr td:nth-child(1){
+		width:100px;
+	}
+	#tooltipstate tr td:nth-child(2){
+		text-align:center;
+	}
+</style>
+
+<div id="tooltipstate"></div><!-- div to hold tooltip. -->
+<svg width="960" height="800" id="statesvg"></svg> <!-- svg to hold the map. -->
+
+
+<script src="uStates.js"></script> <!-- creates uStates. -->
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+	function tooltipHtml(n, d){	/* function to create html content string in tooltip div. */
+		return "<h4>"+n+"</h4><table>"+
+			"<tr><td>Complaints</td><td> : "+(d.Complaints)+"</td></tr>"+
+			"<tr><td>Timely</td><td> : "+(d.Timely_Counts)+"</td></tr>"+
+			"<tr><td>Disputed</td><td> : "+(d.Disputed_Counts)+"</td></tr>"+
+			"</table>";
+	}
+	
+	var sampleData ={};	/* Sample random data. */	
+
+	 Shiny.addCustomMessageHandler("ASdataChanged", function(AS_Data) {
+			AS_Data.State.forEach(function(d,i){
+				var complaints = AS_Data.Complaints[i];
+				var timely = AS_Data.Timely_Count[i];
+				var disputed = AS_Data.Disputed_Count[i];
+				var state = AS_Data.State[i];
+						
+				sampleData[state]={Complaints:complaints, Timely_Counts:timely, Disputed_Counts:disputed, color:d3.interpolate("#ffffcc", "#ccccff")(complaints/10)}; 
+							
+			});
+
+		/* draw states on id #statesvg */	
+		uStates.draw("#statesvg", sampleData, tooltipHtml);
+	});
+
+	d3.select(self.frameElement).style("height", "600px"); 
+</script>
