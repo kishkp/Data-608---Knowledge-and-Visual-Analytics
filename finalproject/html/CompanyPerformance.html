@@ -1,19 +1,69 @@
 <style>
 	path { stroke: #fff;}
+
+	#SBtooltipstate {   
+		position: absolute;           
+		text-align: center;
+		padding: 20px;             
+		margin: 10px;
+		font: 12px sans-serif;        
+		background: lightsteelblue;   
+		border: 1px;      
+		border-radius: 2px;           
+		pointer-events: none;         
+	}
+	#SBtooltipstate h4{
+		margin:0;
+		font-size:14px;
+	}
+	#SBtooltipstate{
+		background:rgba(0,0,0,0.9);
+		border:1px solid grey;
+		border-radius:5px;
+		font-size:12px;
+		width:auto;
+		padding:4px;
+		color:white;
+		opacity:0;
+	}
+	#SBtooltipstate table{
+		table-layout:auto;
+	}
+	#SBtooltipstate tr td{
+		padding:0;
+		margin:0;
+	}
+	#SBtooltipstate tr td:nth-child(1){
+		width:100px;
+	}
+	#SBtooltipstate tr td:nth-child(2){
+		text-align:center;
+	}
+
 </style>
+
+<script src="//d3js.org/d3.v3.min.js"></script>
 
 <div>
 	<p align=center style='text-align:center'><b>(WIP) Financial Companies Performance Analysis</b></p>
 	<p align=center style='text-align:center'><b>Adapted from: https://bl.ocks.org/mbostock/4348373 </b></p>
 </div>
-<svg width="960" height="600" id="sunburst"></svg> <!-- svg to hold the map. -->
 
-<script src="https://d3js.org/d3.v3.min.js"></script>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+<div id="SBtooltipstate"></div><!-- div to hold tooltip. -->
+<div>
+	<svg width="800" height="500" id="sunburst"></svg> <!-- svg to hold the map. -->
+</div>
+
+
 <script>
-	var width = 960,
-		height = 700,
+
+
+
+	
+Shiny.addCustomMessageHandler("CPdataChanged", function(CP_Data) {
+
+	var width = 800,
+		height = 600,
 		radius = (Math.min(width, height) / 2) - 10;
 
 	var formatNumber = d3.format(",d");
@@ -35,110 +85,63 @@
 		.innerRadius(function(d) { return Math.max(0, y(d.y)); })
 		.outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
 
+	// var svg = d3.select("body").append("svg")
+
+	function SBtooltipHtml(d){	/* function to create html content string in tooltip div. */
+		return "<h4>"+ d.name +"</h4><table>"+
+			"<tr><td>Size</td><td> : "+(d.value)+"</td></tr>"+
+			"</table>";
+	}
+	
+	function mouseOver(d){
+		console.log("mouse over");
+		d3.select("#SBtooltipstate").transition().duration(200).style("opacity", .9);      
+		
+		d3.select("#SBtooltipstate").html(SBtooltipHtml(d))  
+			.style("left", (d3.event.pageX-400) + "px")     
+			.style("top", (d3.event.pageY - 150) + "px");
+	}
+	
+	function mouseOut(){
+		console.log("mouse out");
+		d3.select("#SBtooltipstate").transition().duration(500).style("opacity", 0);      
+	}
+
 	var svg = d3.select("#sunburst")
 		.attr("width", width)
 		.attr("height", height)
-	  .append("g")
+		.append("g")
 		.attr("transform", "translate(" + width / 2 + "," + (height / 2) + ")");
 
-
-      //*************************************************
-      // GET THE CSV DATA
-      //*************************************************
-      d3.csv("data/religions.csv", function(error, data) {
-		console.log(data);
-        _.each(data, function(element, index, list){
-            element.pop = +element.pop;
-        });
-
-        //*************************************************
-        // THE FUNCTION
-        //*************************************************
-        function genJSON(csvData, groups) {
-
-          var genGroups = function(data) {
-            return _.map(data, function(element, index) {
-              return { name : index, children : element };
-            });
-          };
-
-          var nest = function(node, curIndex) {
-            if (curIndex === 0) {
-              node.children = genGroups(_.groupBy(csvData, groups[0]));
-              _.each(node.children, function (child) {
-                nest(child, curIndex + 1);
-              });
-            }
-            else {
-              if (curIndex < groups.length) {
-                node.children = genGroups(
-                  _.groupBy(node.children, groups[curIndex])
-                );
-                _.each(node.children, function (child) {
-                  nest(child, curIndex + 1);
-                });
-              }
-            }
-            return node;
-          };
-          return nest({}, 0);
-        }
-        //*************************************************
-        // CALL THE FUNCTION
-        //*************************************************
-        
-		var preppedData = genJSON(data, ['year', 'cat'])
-		
-        //*************************************************
-        // LOAD THE PREPPED DATA IN D3
-        //*************************************************
-        var path = svg.datum(preppedData).selectAll("path")
-          .data(partition.nodes)
-        .enter().append("path")
-          .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
-          .attr("d", arc)
-          .attr("class", function(d) { return (d.children ? d : d.parent).name; })
-          .style("stroke", "#fff")
-          .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
-          .style("fill-rule", "evenodd")
-
-      });		
-
-
-/*Shiny.addCustomMessageHandler("CPdataChanged", function(CP_Data) {
-	CP_Data.Company.forEach(function(d,i){
-		csvData = csvData.concat(CP_Data.Company[i]).concat(",").concat(CP_Data.Product[i]).concat(",").concat(CP_Data.Channel[i]).concat(",").concat(CP_Data.Status[i]).concat(",").concat(CP_Data.Complaints[i]).concat("\n");
-		});
-	
-	var preppedData = genJSON(csvData, ['Company', 'Product', 'Channel', 'Status'])						
-	console.log(preppedData);
-});
-
-		
-	d3.json(preppedData, function(error, root) {
-//	  if (error) throw error;
-	  svg.selectAll("path")
-		  .data(partition.nodes(root))
+	svg.datum(JSON.parse(CP_Data)).selectAll("path")
+		.data(partition.nodes)
 		.enter().append("path")
-		  .attr("d", arc)
-		  .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
-		  .on("click", click)
+		.attr("d", arc)
+		.style("fill", function(d) {
+			return color((d.children ? d : d.parent).name); 
+		})
+		.on("click", click)
+		.on("mouseover", mouseOver)
+		.on("mouseout", mouseOut)
 		.append("title")
-		  .text(function(d) { return d.name + "\n" + formatNumber(d.value); });
-	});
+		//.text(function(d) { return d.name + "\n" + formatNumber(d.value); });
 
 	function click(d) {
-	  svg.transition()
-		  .duration(750)
-		  .tween("scale", function() {
+		svg.transition()
+			.duration(750)
+			.tween("scale", function() {
 			var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
 				yd = d3.interpolate(y.domain(), [d.y, 1]),
 				yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
 			return function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); };
-		  })
-		.selectAll("path")
-		  .attrTween("d", function(d) { return function() { return arc(d); }; });
+			})
+			.selectAll("path")
+			.attrTween("d", function(d) { return function() { return arc(d); }; });
 	}
+	d3.select(self.frameElement).style("height", height + "px");
+});
 
-	d3.select(self.frameElement).style("height", height + "px"); */
+
 </script>
+
+

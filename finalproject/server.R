@@ -1,13 +1,11 @@
 library(shiny)
 library(shinythemes)
-library(ggplot2)
 library(dplyr)
 library(googleVis)
 library(plotly)
-library(jsonlite)
-library(vegalite)
-library(reshape2)
 library(data.table)
+library(RJSONIO)
+library(lazyeval)
 
 
 # Read dataset from GitHub
@@ -36,11 +34,6 @@ df <- cbind.data.frame(select(df, Month, Year, Complaints, Timely_Count, Dispute
                        CompPubResp = compresp.fact, Company = comp.fact, State = states.fact, 
                        Channel = channel.fact, Status = status.fact)
 
-create_hierarchial_JSON <- function(){
-  
-} 
-
-
 function(input, output, session) {
 
 ###############################################################  
@@ -48,7 +41,7 @@ function(input, output, session) {
   # Observe the webpage for changes - when the user selects from the dropdowns
 
   observe({
-    print(input$tabs)
+    # print(input$tabs)
     if(input$tabs == "PS") {
 
     } else if(input$tabs == "CT") {
@@ -117,21 +110,99 @@ function(input, output, session) {
     ###################################################################  
     # Third Analysis - Company Performance Analysis    
     
-    select_cols <- c(input$CP_fact, "Company", "Product", "Channel", "Status")
     
+    group_cols <- c("Company", input$CP_dims)
+    select_cols <- c(group_cols, input$CP_fact)
+
+    # print(group_cols)
+    # print(select_cols)
+    
+     # select_cols <- c("Company", "Product", "Complaints")
+     # group_cols <- c("Company", "Product")
+     # sum_cols <- "Complaints"
+     
+    #select_cols <- c("Company", "Product", "Channel", "Complaints")
     # create necessary dataset
+
     CP_Data <- df %>%
-      select(Company, Product, Channel, Status, Complaints, Timely_Count, Disputed_Count) %>%
-      group_by(Company, Product, Channel, Status) %>% 
-      summarise(Complaints = sum(Complaints), Timely_Counts=sum(Timely_Count), Disputed_Counts=sum(Disputed_Count)) %>%
-      select_(.dots = select_cols)
+      select_(.dots = select_cols) %>%
+      group_by_(.dots = group_cols) %>% 
+      summarise_(sum_val = interp(~sum(var), var = as.name(input$CP_fact))) #http://stackoverflow.com/questions/26724124/standard-evaluation-in-dplyr-summarise-on-variable-given-as-a-character-string
+      #summarise_(sum_val = interp(~sum(var), var = as.name(sum_cols))) #http://stackoverflow.com/questions/26724124/standard-evaluation-in-dplyr-summarise-on-variable-given-as-a-character-string
     
-    # send this revised data back to the javascript so that the JS can render the new chart.
-    # session$sendCustomMessage(type = "CPdataChanged", data.table(CP_Data))
+      CP_Data <- as.data.frame(CP_Data)
+      #CP_Data <- cbind.data.frame(master = "Companies",CP_Data)
+
+    # convert the data frame into flare.json format
+    # Adapted from http://stackoverflow.com/questions/12818864/how-to-write-to-json-with-children-from-r/12823899#12823899
+    
+    # print(head(CP_Data))
+    
+    makeList<-function(x){
+      if(ncol(x)>2){
+        listSplit<-split(x[-1],x[1],drop=T)
+        lapply(names(listSplit),function(y){list(name=y,children=makeList(listSplit[[y]]))})
+      }else{
+        lapply(seq(nrow(x[1])),function(y){list(name=x[,1][y],size=x[,2][y])})
+      }
+    }
+    
+    if(length(group_cols)==1){
+      #print("here")
+      jsonOut<-toJSON(list(name="CP_Data",children=makeList(CP_Data)))
+    } else {
+      CP_Data <- cbind.data.frame(master = "Companies",CP_Data)
+      jsonOut<-toJSON(list(name="CP_Data",children=makeList(CP_Data[-1])))
+    }
+
+    # send this JSON to the javascript so that the JS can render the new chart.
+    session$sendCustomMessage(type = "CPdataChanged", jsonOut)
     
     } else if(input$tabs == "CA") {
+
+      output$CA_timeseries <- renderPlotly({
+          select_cols <- c("Channel", "Year", input$CA_fact)
+#          select_cols <- c("Channel", "Year", "Complaints")
+          
+          CA_Data <- df %>%
+            filter(Product == input$CA_Prod, Company == input$CA_Comp) %>%
+            #filter(Product == "Credit card", Company == "Amex") %>%
+            select_(.dots = select_cols) %>%
+            group_by(Channel, Year) %>%
+            summarise_(cases = interp(~sum(var), var = as.name(input$CA_fact))) #http://stackoverflow.com/questions/26724124/standard-evaluation-in-dplyr-summarise-on-variable-given-as-a-character-string
+            #summarise(sum_val = sum(Complaints)) #http://stackoverflow.com/questions/26724124/standard-evaluation-in-dplyr-summarise-on-variable-given-as-a-character-string
+
+          CA_Data <- data.frame(CA_Data)
+          
+          p <- plot_ly(data = CA_Data, x = ~Year, y = ~cases, color = ~Channel, mode = 'markers+line')
+          p
+      })
       
+      output$CA_heatmap <- renderPlotly({
+          select_cols <- c("Channel", "Status", input$CA_fact)
+          # select_cols <- c("Channel", "Status", "Complaints")
+          
+          CA_Data <- df %>%
+            filter(Product == input$CA_Prod, Company == input$CA_Comp) %>%
+            #filter(Product == "Credit card", Company == "Amex") %>%
+            select_(.dots = select_cols) %>%
+            group_by(Channel, Status) %>%
+            summarise_(cases = interp(~sum(var), var = as.name(input$CA_fact))) #http://stackoverflow.com/questions/26724124/standard-evaluation-in-dplyr-summarise-on-variable-given-as-a-character-string
+            #summarise(sum_val = sum(Complaints)) #http://stackoverflow.com/questions/26724124/standard-evaluation-in-dplyr-summarise-on-variable-given-as-a-character-string
+          
+          CA_Data <- as.data.frame(tidyr::spread(data = CA_Data, key = Channel, value = cases))
+          CA_Data[is.na(CA_Data)] <- 0
+          
+          
+          m <- as.matrix(CA_Data[, 2:ncol(CA_Data)])
+          p <- plot_ly(
+            x = colnames(CA_Data[, 2:ncol(CA_Data)]), y = as.character(CA_Data[,1]),
+            z = m, type = "heatmap"
+          )
+          
+          p
+          
+      })
     }  
-    
   }) 
 }

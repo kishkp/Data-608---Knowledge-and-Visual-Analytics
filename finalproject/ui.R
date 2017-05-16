@@ -1,13 +1,11 @@
 library(shiny)
 library(shinythemes)
-library(ggplot2)
 library(dplyr)
 library(googleVis)
 library(plotly)
-library(jsonlite)
-library(vegalite)
-library(reshape2)
 library(data.table)
+library(RJSONIO)
+library(lazyeval)
 
 fluidPage(theme = shinytheme("cerulean"),
   #shinythemes::themeSelector('cerulean'),
@@ -60,9 +58,14 @@ fluidPage(theme = shinytheme("cerulean"),
         sidebarLayout(
           sidebarPanel(
             includeHTML("html/CompanyPerformance_Brief.html"),
-            radioButtons("CP_fact", "Measures:",
-                         c("Complaints" = "Complaints", "Timely" = "Timely_Counts", 
-                           "Disputed" = "Disputed_Counts"), selected = "Complaints"),
+            radioButtons("CP_fact", "",
+                         c("Complaints" = "Complaints", "Timely" = "Timely_Count", 
+                           "Disputed" = "Disputed_Count"), selected = "Complaints"),
+            tags$p(tags$b("Levels:"), "You can select which levels to include to drill into."),
+            checkboxGroupInput("CP_dims", "",
+                               c("Product" = "Product",
+                                 "Channel" = "Channel",
+                                 "Status" = "Status")),
             width=3),
           mainPanel(
             includeHTML("html/CompanyPerformance.html")
@@ -70,6 +73,27 @@ fluidPage(theme = shinytheme("cerulean"),
         )
       )
     ),
-    tabPanel("Channel Analysis", value = "CA")
+    tabPanel("Channel Analysis", value = "CA",
+      fluidPage(
+        sidebarLayout(
+          sidebarPanel(
+            includeHTML("html/channelAnalysis_Brief.html"),
+            radioButtons("CA_fact", "",
+                         c("Complaints" = "Complaints", "Timely" = "Timely_Count", 
+                           "Disputed" = "Disputed_Count"), selected = "Complaints"),
+            selectInput(inputId = "CA_Comp", label = "Company :", choices = c('Amex', 'Bank of America', 'Capital One', 'Citibank', 
+                                                                              'Ditech Financial LLC', 'Encore Capital Group', 'Equifax', 'Experian', 'JPMorgan Chase & Co.', 'Nationstar Mortgage', 
+                                                                              'Navient Solutions, LLC.', 'Ocwen', 'Others', 'PNC Bank N.A.', 'Synchrony Financial', 
+                                                                              'TransUnion Intermediate Holdings, Inc.', 'U.S. Bancorp', 'Wells Fargo & Company')),
+            selectInput(inputId = "CA_Prod", label = "Product :",  choices = c('Bank account or service', 'Consumer Loan', 'Credit card', 
+                                                                               'Credit reporting', 'Debt collection', 'Mortgage', 'Others', 'Student Loan')),
+            width=3),
+          mainPanel(
+            fluidRow(plotlyOutput(outputId = "CA_timeseries", height = "300px")),
+            fluidRow(plotlyOutput(outputId = "CA_heatmap", height = "300px"))
+          )
+        )
+      )        
+    )
   )
 )
